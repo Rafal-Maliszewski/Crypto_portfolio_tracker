@@ -3,19 +3,19 @@ import json
 import requests
 from datetime import datetime
 
+def read_currencies_from_file(filename):
+    currencies = {}
+    with open(filename, 'r') as file:
+        for line in file:
+            if line.strip():  # Check if the line is not empty
+                name, quantity = line.strip().split(":")
+                currencies[name] = float(quantity)
+    return currencies
+filename = "currencies.txt"
+currencies = read_currencies_from_file(filename)
+
 # Defining Binance API URL 
 key = "https://api.binance.com/api/v3/ticker/price?symbol="
-
-# Making list for multiple crypto's 
-currencies = {"BTCUSDT":0.01, #insert {name:quantity}
-"ETHUSDT":0.1,
-"MATICUSDT":1,
-"AVAXUSDT":1,
-"ONDOUSDT":100,
-"MAVIAUSDT":10,
-} 
-other_currencies={"MAVIAUSDT":1 #other, not listed on binance ; in progress...
-                  }
 
 def get_cryptocurrency_price(symbol):
     url = "https://api.coingecko.com/api/v3/coins/list"
