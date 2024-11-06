@@ -4,15 +4,21 @@ import requests
 from datetime import datetime
 import matplotlib.pyplot as plt
 import time
+import os
 
 def read_currencies_from_file(filename):
     currencies = {}
-    with open(filename, 'r') as file:
+    current_folder = os.path.dirname(os.path.abspath(__file__))
+    file_path = os.path.join(current_folder, f'{filename}')
+    with open(file_path, 'r') as file:
         for line in file:
             if line.strip():  # Check if the line is not empty
                 name, quantity = line.strip().split(":")
                 currencies[name] = float(quantity)
-    return currencies
+    folder_path= os.path.join(current_folder, 'Wallet history')
+    if not os.path.exists(folder_path):
+        os.mkdir(folder_path)
+    return currencies, folder_path
 
 
 def get_cryptocurrency_price_coingecko(symbol, response):
@@ -61,12 +67,12 @@ def get_cryptocurrency_price_paprika(symbol):
         print("Failed to fetch data")
         return None
 
-def get_price():
+def get_price(folder_path):
     print("Collecting data...")
     currencies_count=len(currencies)
-    key = "https://api.binance.com/api/v3/ticker/price?symbol="     # Defining Binance API URL 
+    key = "https://api.binance.com/api/v3/ticker/price?symbol="     # Defining Binance API URL
     filedate= datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-    filename =  "crypto_"+filedate + "_list.txt"
+    filename = folder_path+"/crypto_"+filedate + "_list.txt"
     total_value=0
     url_gecko = "https://api.coingecko.com/api/v3/coins/list"
     response_gecko = requests.get(url_gecko)
@@ -123,7 +129,6 @@ def get_price():
 
 def read_data(filename):
     coin_values = {}
-
     with open(filename, 'r') as file:
         lines = file.readlines()
         for line in lines:
@@ -146,7 +151,7 @@ def read_data(filename):
             total_value = float(lines[-1].split(":")[1])
     return coin_values, total_value
 
-def create_wheel_chart(coin_values, total_value, filedate):
+def create_wheel_chart(coin_values, total_value, filedate, folder_path):
     sorted_coin_values = dict(sorted(coin_values.items(), key=lambda item: item[1], reverse=True))  
     labels = sorted_coin_values.keys()
     sizes = [(sorted_coin_values[symbol] / total_value) * 100 for symbol in sorted_coin_values]
@@ -156,14 +161,14 @@ def create_wheel_chart(coin_values, total_value, filedate):
     ax.axis('equal') 
     ax.set_title(f'Percentage of Total Value [{int(total_value)}] for Each Coin')
     # Save the plot to a file
-    plt.savefig(f'crypto_{filedate}_distribution.png', bbox_inches='tight')
+    plt.savefig(folder_path+f'/crypto_{filedate}_distribution.png', bbox_inches='tight')
     print("Data saved to the files")
     plt.show()
     plt.close()
 
 if __name__=="__main__":
     wallet_filename = "currencies.txt"
-    currencies = read_currencies_from_file(wallet_filename)
-    filedate, values_filename = get_price()
+    currencies, folder_path = read_currencies_from_file(wallet_filename)
+    filedate, values_filename = get_price(folder_path)
     coin_values, total_value = read_data(values_filename)
-    create_wheel_chart(coin_values, total_value, filedate)
+    create_wheel_chart(coin_values, total_value, filedate, folder_path)
