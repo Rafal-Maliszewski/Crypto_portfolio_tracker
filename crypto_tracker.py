@@ -5,6 +5,7 @@ from datetime import datetime
 import matplotlib.pyplot as plt
 import time
 import os
+import sys
 
 def read_currencies_from_file(filename):
     currencies = {}
@@ -71,8 +72,8 @@ def get_price(folder_path):
     print("Collecting data...")
     currencies_count=len(currencies)
     key = "https://api.binance.com/api/v3/ticker/price?symbol="     # Defining Binance API URL
-    filedate= datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-    filename = folder_path+"/crypto_"+filedate + "_list.txt"
+    filedate= datetime.now().strftime("%d.%m.%Y %H%M%S")
+    filename = folder_path+"/crypto list "+filedate + ".txt"
     total_value=0
     url_gecko = "https://api.coingecko.com/api/v3/coins/list"
     response_gecko = requests.get(url_gecko)
@@ -96,6 +97,7 @@ def get_price(folder_path):
                 total_value+=value
                 #print(f"{data['symbol']} price is {price}") 
                 #print(f"{data['symbol']} value is {value} \n")
+                file.write(f"quantity: {currencies[i]}")
                 file.write(f"price: {price}\n")
                 file.write(f"value: {value}\n\n")
                 currencies_fetched+=1
@@ -114,6 +116,7 @@ def get_price(folder_path):
                     total_value+=value
                 #print(f"{coin_symbol} price is {price}")
                 #print(f"{coin_symbol} value is {value} \n")
+                file.write(f"quantity: {currencies[i]}")
                 file.write(f"price: {price}\n")
                 file.write(f"value: {value}\n\n")
                 currencies_fetched+=1
@@ -161,7 +164,7 @@ def create_wheel_chart(coin_values, total_value, filedate, folder_path):
     ax.axis('equal') 
     ax.set_title(f'Percentage of Total Value [{int(total_value)}] for Each Coin')
     # Save the plot to a file
-    plt.savefig(folder_path+f'/crypto_{filedate}_distribution.png', bbox_inches='tight')
+    plt.savefig(folder_path+f'/crypto distribution {filedate}.png', bbox_inches='tight')
     print("Data saved to the files")
     plt.show()
     plt.close()
@@ -169,6 +172,13 @@ def create_wheel_chart(coin_values, total_value, filedate, folder_path):
 if __name__=="__main__":
     wallet_filename = "currencies.txt"
     currencies, folder_path = read_currencies_from_file(wallet_filename)
-    filedate, values_filename = get_price(folder_path)
+    try:
+        filedate, values_filename = get_price(folder_path)
+    except requests.exceptions.ConnectionError as e:
+        print("ERROR: No internet connection!")
+        sys.exit(1)
+    except requests.exceptions.HTTPError as e:
+        print("HTTP ERROR: Server returned error!")
+        sys.exit(1)
     coin_values, total_value = read_data(values_filename)
     create_wheel_chart(coin_values, total_value, filedate, folder_path)
