@@ -97,7 +97,7 @@ def get_price(folder_path):
                 total_value+=value
                 #print(f"{data['symbol']} price is {price}") 
                 #print(f"{data['symbol']} value is {value} \n")
-                file.write(f"quantity: {currencies[i]}")
+                file.write(f"quantity: {currencies[i]}\n")
                 file.write(f"price: {price}\n")
                 file.write(f"value: {value}\n\n")
                 currencies_fetched+=1
@@ -116,7 +116,7 @@ def get_price(folder_path):
                     total_value+=value
                 #print(f"{coin_symbol} price is {price}")
                 #print(f"{coin_symbol} value is {value} \n")
-                file.write(f"quantity: {currencies[i]}")
+                file.write(f"quantity: {currencies[i]}\n")
                 file.write(f"price: {price}\n")
                 file.write(f"value: {value}\n\n")
                 currencies_fetched+=1
